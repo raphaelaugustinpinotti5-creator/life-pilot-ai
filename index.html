@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#11131d">
+<meta name="description" content="Life Pilot AI — comprends exactement ce qu'on te demande et sache quoi faire.">
+<title>Life Pilot AI</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f7fb;
+  --card:#fff;
+  --text:#171925;
+  --muted:#70778a;
+  --border:#e6e8ef;
+  --primary:#665cf5;
+  --primary2:#8279ff;
+  --dark:#11131d;
+  --soft:#f0efff;
+  --success:#15936d;
+  --warning:#b97800;
+  --danger:#c44747;
+}
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.app{min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  position:fixed;
+  left:0;top:0;bottom:0;
+  width:250px;
+  background:var(--dark);
+  color:#fff;
+  padding:24px 16px;
+  display:flex;
+  flex-direction:column;
+  z-index:20;
+}
+.logo{
+  font-size:21px;
+  font-weight:900;
+  padding:8px 12px 28px;
+}
+.logo span{color:#8d86ff}
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.nav button{
+  background:transparent;
+  color:#b9bdc9;
+  border:0;
+  border-radius:13px;
+  padding:12px 13px;
+  text-align:left;
+  font-weight:700;
+}
+.nav button:hover,.nav button.active{
+  background:#242734;
+  color:#fff;
+}
+.sidebar-bottom{margin-top:auto}
+.plan-box{
+  background:#222531;
+  border:1px solid #303442;
+  border-radius:17px;
+  padding:15px;
+}
+.plan-box strong{display:block;margin-bottom:6px}
+.plan-box p{font-size:12px;color:#aeb3c0;line-height:1.5}
+.upgrade-small{
+  width:100%;
+  margin-top:12px;
+  border:0;
+  background:#fff;
+  color:#151722;
+  border-radius:10px;
+  padding:10px;
+  font-weight:900;
+}
+
+/* MAIN */
+.main{
+  margin-left:250px;
+  min-height:100vh;
+}
+.topbar{
+  height:72px;
+  background:#ffffffd9;
+  backdrop-filter:blur(15px);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 34px;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.topbar-title{font-weight:850}
+.user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.avatar{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:var(--soft);
+  color:var(--primary);
+  display:grid;
+  place-items:center;
+  font-weight:900;
+}
+.content{
+  max-width:1050px;
+  margin:auto;
+  padding:42px 30px 70px;
+}
+
+/* HOME */
+.hero{
+  text-align:center;
+  max-width:800px;
+  margin:10px auto 32px;
+}
+.badge{
+  display:inline-flex;
+  background:var(--soft);
+  color:var(--primary);
+  border-radius:100px;
+  padding:7px 12px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.hero h1{
+  font-size:clamp(34px,5vw,58px);
+  line-height:1.02;
+  letter-spacing:-2.5px;
+  margin:17px 0 14px;
+}
+.hero h1 span{color:var(--primary)}
+.hero p{
+  color:var(--muted);
+  font-size:17px;
+  line-height:1.65;
+}
+
+/* ANALYZE BOX */
+.analyze-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:26px;
+  padding:25px;
+  box-shadow:0 18px 60px rgba(20,25,50,.07);
+}
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:20px;
+}
+.tab{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:800;
+}
+.tab.active{
+  background:var(--dark);
+  color:#fff;
+  border-color:var(--dark);
+}
+.dropzone{
+  border:2px dashed #dfe1ea;
+  border-radius:19px;
+  padding:28px;
+  text-align:center;
+  background:#fafaff;
+  transition:.2s;
+}
+.dropzone:hover{
+  border-color:var(--primary);
+  background:#f8f7ff;
+}
+.drop-icon{
+  font-size:34px;
+  margin-bottom:9px;
+}
+.dropzone h3{font-size:17px;margin-bottom:6px}
+.dropzone p{font-size:13px;color:var(--muted);margin-bottom:15px}
+.file-btn{
+  display:inline-flex;
+  background:var(--dark);
+  color:#fff;
+  border-radius:11px;
+  padding:11px 15px;
+  font-weight:800;
+}
+.file-btn input{display:none}
+textarea{
+  width:100%;
+  min-height:170px;
+  resize:vertical;
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:16px;
+  outline:none;
+  background:#fff;
+}
+textarea:focus,input:focus,select:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px #665cf51a;
+}
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 220px;
+  gap:14px;
+  margin-top:14px;
+}
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:7px;
+}
+.input,.select{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  outline:none;
+  background:#fff;
+}
+.hint{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+  margin-top:10px;
+}
+.advanced{
+  margin-top:14px;
+}
+.advanced summary{
+  cursor:pointer;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:800;
+}
+.hints{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:10px;
+}
+.hints span{
+  background:#f2f3f7;
+  color:#686f80;
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:11px;
+}
+.primary{
+  border:0;
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  color:#fff;
+  border-radius:14px;
+  padding:14px 19px;
+  font-weight:900;
+  box-shadow:0 10px 25px #665cf52c;
+}
+.primary.full{
+  width:100%;
+  margin-top:18px;
+}
+.secondary{
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  border-radius:12px;
+  padding:11px 14px;
+  font-weight:800;
+}
+
+/* SECTIONS */
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+.section-title h2{font-size:23px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:19px;
+  padding:19px;
+}
+.situation-card{
+  min-height:155px;
+  cursor:pointer;
+  transition:.2s;
+}
+.situation-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 15px 40px #1215230b;
+}
+.situation-icon{font-size:25px;margin-bottom:16px}
+.situation-card h3{font-size:16px;margin-bottom:6px}
+.situation-card p{font-size:12px;color:var(--muted)}
+.status{
+  display:inline-block;
+  margin-top:13px;
+  font-size:10px;
+  font-weight:900;
+  background:#eaf8f3;
+  color:var(--success);
+  padding:5px 8px;
+  border-radius:7px;
+}
+
+/* ANALYSIS */
+.analysis-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  margin-bottom:20px;
+}
+.analysis-header h1{font-size:32px;letter-spacing:-1px}
+.analysis-header p{color:var(--muted);margin-top:5px}
+.analysis-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+.analysis-card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:19px;
+  padding:20px;
+}
+.analysis-card.wide{grid-column:1/-1}
+.analysis-card h3{
+  font-size:13px;
+  letter-spacing:.04em;
+  margin-bottom:10px;
+}
+.analysis-card p,.analysis-card li{
+  font-size:14px;
+  line-height:1.65;
+  color:#4f5667;
+}
+.analysis-card ul{padding-left:18px}
+.attention{
+  background:#fff9ec;
+  border-color:#f2dfb4;
+}
+.action{
+  background:#f1fbf7;
+  border-color:#cdeee1;
+}
+.reply{
+  background:#f5f4ff;
+  border-color:#dedbff;
+}
+.reply-box{
+  background:#fff;
+  border:1px solid #e4e1ff;
+  border-radius:13px;
+  padding:14px;
+  margin-top:10px;
+  white-space:pre-wrap;
+  line-height:1.6;
+}
+.analysis-actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+
+/* PREMIUM */
+.premium{
+  background:linear-gradient(135deg,#11131d,#242738);
+  color:#fff;
+  border-radius:25px;
+  padding:30px;
+  margin-top:30px;
+  overflow:hidden;
+  position:relative;
+}
+.premium:after{
+  content:"✦";
+  position:absolute;
+  right:35px;
+  top:20px;
+  font-size:100px;
+  color:#ffffff0a;
+}
+.premium h2{font-size:27px;margin-bottom:8px}
+.premium>p{color:#c7cad4;max-width:650px;line-height:1.6}
+.price{font-size:26px;font-weight:900;margin:16px 0}
+.price small{font-size:13px;color:#aeb3c0;font-weight:500}
+.benefits{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:20px 0;
+}
+.benefit{
+  background:#ffffff0a;
+  border:1px solid #ffffff13;
+  border-radius:10px;
+  padding:10px;
+  font-size:12px;
+}
+.premium .primary{
+  background:#fff;
+  color:#171925;
+  box-shadow:none;
+}
+
+/* LOGIN */
+.login-screen{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:25px;
+  background:radial-gradient(circle at top,#eeedff,#f6f7fb 45%);
+}
+.login-card{
+  width:min(450px,100%);
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:25px;
+  padding:30px;
+  box-shadow:0 25px 80px #12152310;
+}
+.login-logo{
+  font-size:22px;
+  font-weight:900;
+  margin-bottom:27px;
+}
+.login-logo span{color:var(--primary)}
+.login-card h1{font-size:28px;margin-bottom:7px}
+.login-card>p{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:22px}
+.login-card form{display:grid;gap:14px}
+.login-card label{font-size:12px;font-weight:900}
+.login-card input{
+  width:100%;
+  margin-top:7px;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  outline:none;
+}
+.switch-auth{
+  text-align:center;
+  margin-top:16px;
+  color:var(--muted);
+  font-size:13px;
+}
+.link{
+  border:0;background:none;color:var(--primary);font-weight:900;
+}
+
+/* MODAL */
+.modal-bg{
+  position:fixed;
+  inset:0;
+  background:#0b0d15aa;
+  backdrop-filter:blur(5px);
+  z-index:100;
+  display:grid;
+  place-items:center;
+  padding:20px;
+}
+.modal{
+  width:min(540px,100%);
+  background:#fff;
+  border-radius:23px;
+  padding:27px;
+  box-shadow:0 30px 100px #0004;
+}
+.modal h2{margin-bottom:8px}
+.modal p{color:var(--muted);font-size:14px;line-height:1.6}
+.modal-actions{
+  display:flex;
+  gap:9px;
+  justify-content:flex-end;
+  margin-top:20px;
+}
+
+/* MOBILE */
+.mobile-nav{
+  display:none;
+}
+@media(max-width:850px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .topbar{padding:0 18px}
+  .content{padding:28px 16px 60px}
+  .grid{grid-template-columns:1fr}
+  .analysis-grid{grid-template-columns:1fr}
+  .analysis-card.wide{grid-column:auto}
+  .benefits{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .mobile-nav{
+    display:flex;
+    position:fixed;
+    bottom:12px;
+    left:12px;
+    right:12px;
+    background:#171925f2;
+    backdrop-filter:blur(15px);
+    padding:8px;
+    border-radius:18px;
+    z-index:50;
+    justify-content:space-around;
+  }
+  .mobile-nav button{
+    border:0;background:transparent;color:#aeb3c0;
+    padding:9px;font-size:12px;font-weight:800;
+  }
+  .mobile-nav button.active{color:#fff}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">✦ Life Pilot <span>AI</span></div>
+
+    <div id="signupPanel">
+      <h1>Créer ton compte</h1>
+      <p>Commence gratuitement. Life Pilot t'aide à comprendre ce qu'on te demande et à savoir quoi faire.</p>
+
+      <form onsubmit="fakeSignup(event)">
+        <label>
+          Prénom
+          <input id="signupName" required placeholder="Ton prénom">
+        </label>
+
+        <label>
+          Adresse e-mail
+          <input id="signupEmail" required type="email" placeholder="ton@email.com">
+        </label>
+
+        <label>
+          Mot de passe
+          <input id="signupPassword" required minlength="8" type="password" placeholder="8 caractères minimum">
+        </label>
+
+        <button class="primary" type="submit">Créer mon compte gratuitement</button>
+      </form>
+
+      <div class="switch-auth">
+        Déjà un compte ?
+        <button class="link" onclick="showLogin()">Se connecter</button>
+      </div>
+    </div>
+
+    <div id="loginPanel" class="hidden">
+      <h1>Bon retour 👋</h1>
+      <p>Retrouve tes situations et continue là où tu t'étais arrêté.</p>
+
+      <form onsubmit="fakeLogin(event)">
+        <label>
+          Adresse e-mail
+          <input id="loginEmail" required type="email" placeholder="ton@email.com">
+        </label>
+
+        <label>
+          Mot de passe
+          <input required type="password" placeholder="Ton mot de passe">
+        </label>
+
+        <button class="primary" type="submit">Se connecter</button>
+      </form>
+
+      <div class="switch-auth">
+        Pas encore de compte ?
+        <button class="link" onclick="showSignup()">Créer un compte</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APPLICATION -->
+<div id="app" class="app hidden">
+
+  <aside class="sidebar">
+    <div class="logo">✦ Life Pilot <span>AI</span></div>
+
+    <div class="nav">
+      <button id="navHome" class="active" onclick="showPage('home')">🏠 Accueil</button>
+      <button id="navSituations" onclick="showPage('situations')">📁 Mes situations</button>
+      <button id="navPremium" onclick="showPremium()">✨ Premium</button>
+      <button onclick="openSettings()">⚙️ Paramètres</button>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="plan-box">
+        <strong>Version gratuite</strong>
+        <p id="counterSide">0 / 3 situations aujourd'hui</p>
+        <button class="upgrade-small" onclick="showPremium()">Débloquer Premium</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar-title" id="topTitle">Accueil</div>
+      <div class="user">
+        <span id="userName">Utilisateur</span>
+        <div class="avatar" id="avatar">U</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- HOME -->
+      <section id="homePage">
+
+        <div class="hero">
+          <div class="badge">✦ TON COPILOTE DU QUOTIDIEN</div>
+          <h1>Tu ne comprends pas ce qu'on te demande ? <span>Montre-le à Life Pilot.</span></h1>
+          <p>
+            Life Pilot est là pour t'aider à comprendre et gérer tes messages,
+            documents et situations du quotidien.
+          </p>
+        </div>
+
+        <div class="analyze-card">
+
+          <div class="tabs">
+            <button class="tab active" onclick="setInputMode('text',this)">✍️ Écrire</button>
+            <button class="tab" onclick="setInputMode('photo',this)">📷 Photo / document</button>
+          </div>
+
+          <div id="textInput">
+            <textarea id="problemText"
+              placeholder="Explique ton problème le plus précisément possible. Plus tu me donnes de contexte, plus je peux adapter ma réponse."></textarea>
+          </div>
+
+          <div id="photoInput" class="hidden">
+            <div class="dropzone">
+              <div class="drop-icon">📷</div>
+              <h3>Ajoute une photo ou un document</h3>
+              <p>Capture d'écran, courrier, mail, PDF ou document.</p>
+              <label class="file-btn">
+                Choisir un fichier
+                <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.doc,.docx" onchange="fileSelected(event)">
+              </label>
+              <p id="fileName" class="hint"></p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Ce que tu veux obtenir <span style="color:#9298a8">(facultatif)</span></label>
+              <input id="goal" class="input" placeholder="Ex. savoir quoi répondre, comprendre la demande...">
+            </div>
+
+            <div class="field">
+              <label>Ton</label>
+              <select id="tone" class="select">
+                <option>Réponse naturelle</option>
+                <option>Très simple</option>
+                <option>Professionnelle</option>
+                <option>Courte et directe</option>
+                <option>Rassurante</option>
+              </select>
+            </div>
+          </div>
+
+          <details class="advanced">
+            <summary>+ Ajouter des indications facultatives</summary>
+            <div class="hints">
+              <span>Ce qui s'est passé</span>
+              <span>Ce qu'on t'a demandé</span>
+              <span>Ce que tu ne comprends pas</span>
+              <span>Les dates importantes</span>
+              <span>Les informations importantes</span>
+            </div>
+          </details>
+
+          <p class="hint">
+            Tu n'as pas besoin de savoir quoi demander à une IA.
+            Explique simplement la situation comme tu l'expliquerais à quelqu'un.
+          </p>
+
+          <button class="primary full" onclick="analyze()">
+            ✦ Comprendre exactement
+          </button>
+
+        </div>
+
+        <div id="analysisResult" class="hidden" style="margin-top:30px">
+          <div class="analysis-header">
+            <div>
+              <h1>Voilà ce que j'ai compris</h1>
+              <p>Analyse basée sur les informations fournies.</p>
+            </div>
+            <button class="secondary" onclick="newAnalysis()">Nouvelle situation</button>
+          </div>
+
+          <div class="analysis-grid">
+
+            <div class="analysis-card wide">
+              <h3>🧠 CE QUE CE MESSAGE VEUT DIRE</h3>
+              <p id="meaning"></p>
+            </div>
+
+            <div class="analysis-card action">
+              <h3>🎯 CE QU'ILS VEULENT EXACTEMENT</h3>
+              <p id="exact"></p>
+            </div>
+
+            <div class="analysis-card">
+              <h3>👉 CE QUE TU DOIS FAIRE MAINTENANT</h3>
+              <p id="action"></p>
+            </div>
+
+            <div class="analysis-card attention">
+              <h3>⚠️ CE QUI MÉRITE TON ATTENTION</h3>
+              <p id="attention"></p>
+            </div>
+
+            <div class="analysis-card">
+              <h3>❓ CE QU'IL ME MANQUE</h3>
+              <p id="missing"></p>
+            </div>
+
+            <div class="analysis-card reply wide">
+              <h3>✉️ RÉPONSE ADAPTÉE</h3>
+              <div class="reply-box" id="reply"></div>
+
+              <div class="analysis-actions">
+                <button class="primary" onclick="copyReply()">📋 Copier la réponse</button>
+                <button class="secondary" onclick="saveSituation()">📁 Enregistrer la situation</button>
+                <button class="secondary" onclick="showPremium()">✨ Prends le relais</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="premium">
+          <h2>✨ Life Pilot Premium</h2>
+          <p>
+            Ne te contente plus d'obtenir une réponse.
+            Laisse Life Pilot suivre ta situation avec toi.
+          </p>
+          <div class="price">4,99 € <small>/ mois</small></div>
+
+          <div class="benefits">
+            <div class="benefit">♾️ Situations illimitées</div>
+            <div class="benefit">📁 Dossiers persistants</div>
+            <div class="benefit">🧠 Contexte conservé</div>
+            <div class="benefit">✨ Prends le relais</div>
+            <div class="benefit">📷 Plusieurs photos</div>
+            <div class="benefit">📄 Plusieurs documents</div>
+            <div class="benefit">🔎 Comparaison</div>
+            <div class="benefit">🔄 Détection des changements</div>
+            <div class="benefit">❓ Questions intelligentes</div>
+            <div class="benefit">🎯 Personnalisation avancée</div>
+            <div class="benefit">📈 Suivi de l'évolution</div>
+            <div class="benefit">💬 Historique complet</div>
+          </div>
+
+          <button class="primary" onclick="showPremium()">Débloquer Premium — 4,99 € / mois</button>
+        </div>
+
+      </section>
+
+      <!-- SITUATIONS -->
+      <section id="situationsPage" class="hidden">
+        <div class="section-title">
+          <div>
+            <h2>📁 Mes situations</h2>
+            <p class="hint">Retrouve les problèmes que tu as déjà traités.</p>
+          </div>
+          <button class="primary" onclick="showPage('home')">+ Nouvelle situation</button>
+        </div>
+
+        <div id="situationsList" class="grid"></div>
+
+        <div id="emptySituations" class="card" style="text-align:center;padding:50px">
+          <div style="font-size:40px">📁</div>
+          <h3 style="margin:12px 0 6px">Aucune situation enregistrée</h3>
+          <p class="hint">Quand tu enregistreras une situation, elle apparaîtra ici.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="mobile-nav">
+    <button class="active" onclick="showPage('home')">🏠<br>Accueil</button>
+    <button onclick="showPage('situations')">📁<br>Situations</button>
+    <button onclick="showPremium()">✨<br>Premium</button>
+  </div>
+</div>
+
+<!-- MODAL PREMIUM -->
+<div id="premiumModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>✨ Débloquer Life Pilot Premium</h2>
+    <p>
+      Passe au suivi complet de tes situations avec des dossiers persistants,
+      plusieurs documents, la comparaison et « Prends le relais ».
+    </p>
+
+    <div class="price">4,99 € <small>/ mois</small></div>
+
+    <div class="benefits" style="grid-template-columns:1fr 1fr">
+      <div class="benefit">♾️ Illimité</div>
+      <div class="benefit">📁 Dossiers</div>
+      <div class="benefit">🧠 Contexte</div>
+      <div class="benefit">✨ Prends le relais</div>
+      <div class="benefit">🔎 Comparaison</div>
+      <div class="benefit">🔄 Changements</div>
+    </div>
+
+    <p class="hint">
+      Le paiement réel sera connecté lors de la mise en place de Stripe /
+      Google Play Billing. Cette version est un prototype.
+    </p>
+
+    <div class="modal-actions">
+      <button class="secondary" onclick="closePremium()">Plus tard</button>
+      <button class="primary" onclick="fakePremium()">Continuer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   LIFE PILOT AI — PROTOTYPE
+   ============================================================ */
+
+let currentUser = JSON.parse(localStorage.getItem("lifePilotUser") || "null");
+let situations = JSON.parse(localStorage.getItem("lifePilotSituations") || "[]");
+let dailyCount = Number(localStorage.getItem("lifePilotDailyCount") || 0);
+let lastDay = localStorage.getItem("lifePilotDay") || "";
+
+function today(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function resetDaily(){
+  if(lastDay !== today()){
+    dailyCount = 0;
+    lastDay = today();
+    localStorage.setItem("lifePilotDailyCount","0");
+    localStorage.setItem("lifePilotDay",lastDay);
+  }
+}
+
+resetDaily();
+
+function fakeSignup(e){
+  e.preventDefault();
+
+  const name=document.getElementById("signupName").value.trim();
+  const email=document.getElementById("signupEmail").value.trim();
+
+  currentUser={name,email};
+  localStorage.setItem("lifePilotUser",JSON.stringify(currentUser));
+
+  openApp();
+}
+
+function fakeLogin(e){
+  e.preventDefault();
+
+  const email=document.getElementById("loginEmail").value.trim();
+
+  currentUser={
+    name:email.split("@")[0],
+    email
+  };
+
+  localStorage.setItem("lifePilotUser",JSON.stringify(currentUser));
+
+  openApp();
+}
+
+function showLogin(){
+  document.getElementById("signupPanel").classList.add("hidden");
+  document.getElementById("loginPanel").classList.remove("hidden");
+}
+
+function showSignup(){
+  document.getElementById("loginPanel").classList.add("hidden");
+  document.getElementById("signupPanel").classList.remove("hidden");
+}
+
+function openApp(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  const name=currentUser?.name || "Utilisateur";
+
+  document.getElementById("userName").textContent=name;
+  document.getElementById("avatar").textContent=name.charAt(0).toUpperCase();
+
+  updateCounter();
+  renderSituations();
+}
+
+if(currentUser) openApp();
+
+function updateCounter(){
+  resetDaily();
+  document.getElementById("counterSide").textContent =
+    dailyCount + " / 3 situations aujourd'hui";
+}
+
+function setInputMode(mode,button){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  button.classList.add("active");
+
+  document.getElementById("textInput").classList.toggle("hidden",mode!=="text");
+  document.getElementById("photoInput").classList.toggle("hidden",mode!=="photo");
+}
+
+function fileSelected(e){
+  const file=e.target.files[0];
+
+  if(file){
+    document.getElementById("fileName").textContent =
+      "✓ " + file.name + " — fichier sélectionné";
+  }
+}
+
+function analyze(){
+
+  resetDaily();
+
+  if(dailyCount>=3){
+    showPremium();
+    return;
+  }
+
+  const text=document.getElementById("problemText").value.trim();
+  const file=document.getElementById("fileInput")?.files?.[0];
+  const goal=document.getElementById("goal").value.trim();
+  const tone=document.getElementById("tone").value;
+
+  if(!text && !file){
+    alert("Ajoute une explication, une photo ou un document pour que Life Pilot puisse analyser ta situation.");
+    return;
+  }
+
+  dailyCount++;
+  localStorage.setItem("lifePilotDailyCount",dailyCount);
+  localStorage.setItem("lifePilotDay",today());
+  updateCounter();
+
+  let source=text;
+
+  if(file && !source){
+    source="Tu as ajouté le document « "+file.name+" ». Le contenu réel sera analysé par le moteur IA lorsqu'il sera connecté.";
+  }
+
+  const clean=source.length>700 ? source.slice(0,700)+"…" : source;
+
+  document.getElementById("meaning").textContent =
+    "À partir des informations que tu as fournies, Life Pilot identifie le contexte de ta situation et les éléments qui semblent importants. Dans la version connectée à l'IA, cette analyse sera basée directement sur le contenu réel de ton message ou document.";
+
+  document.getElementById("exact").textContent =
+    goal
+      ? "Ton objectif est de : "+goal+". L'analyse complète identifiera précisément ce que l'expéditeur te demande et distinguera cette demande de ce qui est simplement informatif."
+      : "La demande exacte sera déterminée à partir du contenu réel fourni. Life Pilot distinguera les demandes principales, secondaires, les obligations explicitement indiquées et les informations simplement informatives.";
+
+  document.getElementById("action").textContent =
+    "Vérifie d'abord les éléments importants du message, notamment les dates, documents demandés et actions explicitement indiquées. La prochaine action précise sera déterminée à partir du contenu réel.";
+
+  document.getElementById("attention").textContent =
+    "Ne considère pas une interprétation comme certaine si le document est ambigu. Vérifie les informations essentielles avant d'agir, particulièrement les échéances et les documents demandés.";
+
+  document.getElementById("missing").textContent =
+    goal
+      ? "Aucune question supplémentaire n'est nécessaire pour le prototype. L'analyse réelle pourra demander une précision uniquement si une information essentielle manque."
+      : "Ton objectif personnel n'a pas été précisé. Tu peux continuer sans le préciser, mais l'analyse sera encore plus adaptée si tu indiques ce que tu veux obtenir.";
+
+  let reply =
+    tone==="Professionnelle"
+    ? "Bonjour,\n\nMerci pour votre message. J’ai bien pris connaissance de votre demande et je vais vérifier les éléments concernés afin de pouvoir vous répondre précisément.\n\nCordialement,"
+    : tone==="Très simple"
+    ? "Bonjour,\n\nJ’ai bien reçu votre message. Je vais regarder ce que vous me demandez et revenir vers vous.\n\nMerci."
+    : tone==="Courte et directe"
+    ? "Bonjour,\n\nJ’ai bien reçu votre message. Je vais vérifier les éléments demandés et vous répondre rapidement.\n\nCordialement,"
+    : tone==="Rassurante"
+    ? "Bonjour,\n\nMerci pour votre message. J’ai bien pris en compte votre demande. Je vais vérifier les éléments nécessaires et revenir vers vous.\n\nBonne journée,"
+    : "Bonjour,\n\nMerci pour votre message. J’ai bien pris connaissance de votre demande. Je vais vérifier les éléments concernés et revenir vers vous.\n\nBonne journée,";
+
+  document.getElementById("reply").textContent=reply;
+
+  document.getElementById("analysisResult").classList.remove("hidden");
+
+  document.getElementById("analysisResult").scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+}
+
+function copyReply(){
+  const text=document.getElementById("reply").textContent;
+
+  navigator.clipboard?.writeText(text)
+    .then(()=>alert("✓ Réponse copiée."))
+    .catch(()=>alert("Sélectionne et copie la réponse."));
+}
+
+function saveSituation(){
+
+  const text=document.getElementById("problemText").value.trim();
+  const file=document.getElementById("fileInput")?.files?.[0];
+
+  const situation={
+    id:Date.now(),
+    title:
+      document.getElementById("goal").value.trim()
+      || (file ? file.name : "Nouvelle situation"),
+    preview:
+      text || "Document ajouté : "+(file?.name || "document"),
+    created:new Date().toLocaleDateString("fr-FR"),
+    status:"active"
+  };
+
+  situations.unshift(situation);
+
+  localStorage.setItem(
+    "lifePilotSituations",
+    JSON.stringify(situations)
+  );
+
+  renderSituations();
+
+  alert("✓ Situation enregistrée.");
+}
+
+function renderSituations(){
+
+  const list=document.getElementById("situationsList");
+  const empty=document.getElementById("emptySituations");
+
+  if(!situations.length){
+    list.innerHTML="";
+    empty.classList.remove("hidden");
+    return;
+  }
+
+  empty.classList.add("hidden");
+
+  list.innerHTML=situations.map(s=>`
+    <div class="card situation-card" onclick="openSituation(${s.id})">
+      <div class="situation-icon">📁</div>
+      <h3>${escapeHtml(s.title)}</h3>
+      <p>${escapeHtml(s.preview).slice(0,100)}</p>
+      <span class="status">Situation active</span>
+      <p style="margin-top:8px;font-size:10px">${s.created}</p>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(text){
+  return String(text)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function openSituation(id){
+  const s=situations.find(x=>x.id===id);
+
+  if(!s)return;
+
+  showPage("home");
+
+  document.getElementById("problemText").value=s.preview;
+
+  document.getElementById("goal").value=s.title;
+
+  alert(
+    "Situation ouverte.\n\n" +
+    "Dans la version Premium, Life Pilot conservera ici tout l'historique du dossier et pourra analyser automatiquement les nouveaux messages."
+  );
+}
+
+function newAnalysis(){
+  document.getElementById("analysisResult").classList.add("hidden");
+  document.getElementById("problemText").value="";
+  document.getElementById("goal").value="";
+  document.getElementById("fileInput").value="";
+  document.getElementById("fileName").textContent="";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showPage(page){
+
+  document.getElementById("homePage").classList.toggle("hidden",page!=="home");
+  document.getElementById("situationsPage").classList.toggle("hidden",page!=="situations");
+
+  document.getElementById("topTitle").textContent =
+    page==="home" ? "Accueil" : "Mes situations";
+
+  document.getElementById("navHome").classList.toggle("active",page==="home");
+  document.getElementById("navSituations").classList.toggle("active",page==="situations");
+
+  if(page==="situations")renderSituations();
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showPremium(){
+  document.getElementById("premiumModal").classList.remove("hidden");
+}
+
+function closePremium(){
+  document.getElementById("premiumModal").classList.add("hidden");
+}
+
+function fakePremium(){
+  closePremium();
+
+  alert(
+    "✨ Prototype Premium\n\n" +
+    "Le bouton est prêt. Lors de la mise en production, il sera relié au vrai système de paiement et l'abonnement sera automatiquement associé au compte utilisateur."
+  );
+}
+
+function openSettings(){
+  alert(
+    "⚙️ Paramètres\n\n" +
+    "La version finale contiendra :\n" +
+    "• compte\n" +
+    "• abonnement\n" +
+    "• notifications\n" +
+    "• confidentialité\n" +
+    "• suppression des données\n" +
+    "• déconnexion"
+  );
+}
+</script>
+
+</body>
+</html>
