@@ -4,11 +4,12 @@
   "description": "Backend de Life Pilot",
   "type": "module",
   "scripts": {
-  "start": "node backend/server.js"
+    "start": "node backend/server.js"
   },
   "dependencies": {
     "cors": "latest",
     "dotenv": "latest",
-    "express": "latest"
+    "express": "latest",
+    "openai": "latest"
   }
 }
