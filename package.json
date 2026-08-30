@@ -1,0 +1,14 @@
+{
+  "name": "life-pilot-backend",
+  "version": "1.0.0",
+  "description": "Backend de Life Pilot",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest"
+  }
+}
