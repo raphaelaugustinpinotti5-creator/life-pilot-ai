@@ -48,7 +48,7 @@ app.post("/api/analyze", async (req, res) => {
         : "Aider l'utilisateur à comprendre et gérer sa situation.";
 
     const response = await openai.responses.create({
-      model: "gpt-5.5",
+      model: "gpt-5.6-luna",
 
       instructions: `
 Tu es Life Pilot, un assistant intelligent destiné à aider l'utilisateur
