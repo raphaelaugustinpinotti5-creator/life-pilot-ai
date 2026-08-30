@@ -4,7 +4,7 @@
   "description": "Backend de Life Pilot",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+  "start": "node backend/server.js"
   },
   "dependencies": {
     "cors": "latest",
