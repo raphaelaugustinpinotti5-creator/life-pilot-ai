@@ -1,292 +1,380 @@
-const API_URL = "https://life-pilot-ai-5fkm.onrender.com";
+"use strict";
+
+/* =========================================================
+   LIFE PILOT — APP.JS
+   Gestion complète de l'interface utilisateur
+   ========================================================= */
+
+
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+
+const API_URL = window.location.origin;
 
 let selectedTone = "Réponse naturelle";
+let selectedFiles = [];
+
+
+/* =========================================================
+   TONS DISPONIBLES
+   ========================================================= */
 
 const tones = [
-  "Réponse naturelle",
-  "Très simple",
-  "Professionnelle",
-  "Courte et directe",
-  "Rassurante"
+  {
+    name: "Réponse naturelle",
+    description: "Une réponse claire et naturelle."
+  },
+  {
+    name: "Très simple",
+    description: "Des explications faciles à comprendre."
+  },
+  {
+    name: "Professionnelle",
+    description: "Une réponse structurée et professionnelle."
+  },
+  {
+    name: "Courte et directe",
+    description: "L'essentiel, sans détour."
+  },
+  {
+    name: "Rassurante",
+    description: "Une réponse calme et rassurante."
+  }
 ];
 
-const toneContainer = document.getElementById("tones");
+
+/* =========================================================
+   RÉCUPÉRATION DES ÉLÉMENTS HTML
+   ========================================================= */
+
 const problemInput = document.getElementById("problem");
 const goalInput = document.getElementById("goal");
+
+const toneContainer = document.getElementById("tones");
+
 const fileInput = document.getElementById("file");
-const analyzeButton = document.getElementById("go");
 const filesContainer = document.getElementById("files");
-const resultContainer = document.getElementById("result");
+
+const analyzeButton = document.getElementById("go");
+
 const loadingContainer = document.getElementById("loading");
+const resultContainer = document.getElementById("result");
 const errorContainer = document.getElementById("error");
+
 const toastContainer = document.getElementById("toast");
 
 
-/* ================================
-   INITIALISATION DES TONS
-================================ */
+/* =========================================================
+   INITIALISATION
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  initializeTones();
+
+  updateAnalyzeButton();
+
+  initializeInputs();
+
+  initializeKeyboardShortcuts();
+
+});
+
+
+/* =========================================================
+   INITIALISATION DES CHAMPS
+   ========================================================= */
+
+function initializeInputs() {
+
+  if (problemInput) {
+    problemInput.addEventListener(
+      "input",
+      updateAnalyzeButton
+    );
+  }
+
+  if (goalInput) {
+    goalInput.addEventListener(
+      "input",
+      updateAnalyzeButton
+    );
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener(
+      "change",
+      handleFileSelection
+    );
+  }
+
+}
+
+
+/* =========================================================
+   INITIALISATION DES RACCOURCIS
+   ========================================================= */
+
+function initializeKeyboardShortcuts() {
+
+  if (!problemInput) {
+    return;
+  }
+
+  problemInput.addEventListener("keydown", (event) => {
+
+    /*
+      Ctrl + Entrée
+      permet de lancer l'analyse rapidement.
+    */
+
+    if (
+      event.ctrlKey &&
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      if (!analyzeButton?.disabled) {
+        analyze();
+      }
+
+    }
+
+  });
+
+}
+
+
+/* =========================================================
+   GESTION DES TONS
+   ========================================================= */
 
 function initializeTones() {
-  if (!toneContainer) return;
+
+  if (!toneContainer) {
+    return;
+  }
 
   toneContainer.innerHTML = "";
 
   tones.forEach((tone, index) => {
+
     const button = document.createElement("button");
 
     button.type = "button";
+
     button.className = "tone";
+
+    button.textContent = tone.name;
+
+    button.title = tone.description;
 
     if (index === 0) {
       button.classList.add("active");
     }
 
-    button.textContent = tone;
-
     button.addEventListener("click", () => {
-      selectedTone = tone;
 
-      document.querySelectorAll(".tone").forEach((item) => {
-        item.classList.remove("active");
-      });
+      selectedTone = tone.name;
+
+      document
+        .querySelectorAll(".tone")
+        .forEach((item) => {
+          item.classList.remove("active");
+        });
 
       button.classList.add("active");
+
     });
 
     toneContainer.appendChild(button);
+
   });
+
 }
 
 
-/* ================================
-   GESTION DU BOUTON D'ANALYSE
-================================ */
+/* =========================================================
+   ACTIVATION / DÉSACTIVATION DU BOUTON
+   ========================================================= */
 
 function updateAnalyzeButton() {
-  if (!analyzeButton) return;
+
+  if (!analyzeButton) {
+    return;
+  }
 
   const situation =
     problemInput?.value.trim() || "";
 
   const hasFiles =
-    fileInput?.files?.length > 0;
+    selectedFiles.length > 0;
 
   analyzeButton.disabled =
-    situation.length === 0 && !hasFiles;
+    situation.length === 0 &&
+    !hasFiles;
+
 }
 
 
-/* ================================
+/* =========================================================
    GESTION DES FICHIERS
-================================ */
+   ========================================================= */
 
-function displayFiles() {
-  if (!filesContainer || !fileInput) return;
+function handleFileSelection() {
 
-  filesContainer.innerHTML = "";
-
-  const files = Array.from(fileInput.files);
-
-  files.forEach((file) => {
-    const element = document.createElement("div");
-
-    element.className = "file-pill";
-
-    element.textContent =
-      `📄 ${file.name} · ${formatFileSize(file.size)}`;
-
-    filesContainer.appendChild(element);
-  });
-
-  updateAnalyzeButton();
-}
-
-
-function formatFileSize(size) {
-  if (size < 1024) {
-    return `${size} B`;
-  }
-
-  if (size < 1024 * 1024) {
-    return `${Math.round(size / 1024)} KB`;
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-
-/* ================================
-   AFFICHAGE DES ERREURS
-================================ */
-
-function showError(message) {
-  if (!errorContainer) return;
-
-  errorContainer.textContent = message;
-  errorContainer.classList.add("on");
-}
-
-
-function hideError() {
-  if (!errorContainer) return;
-
-  errorContainer.textContent = "";
-  errorContainer.classList.remove("on");
-}
-
-
-/* ================================
-   CHARGEMENT
-================================ */
-
-function startLoading() {
-  loadingContainer?.classList.add("on");
-
-  resultContainer?.classList.remove("on");
-
-  analyzeButton?.classList.add("loading");
-
-  if (analyzeButton) {
-    analyzeButton.disabled = true;
-    analyzeButton.textContent = "Analyse en cours...";
-  }
-}
-
-
-function stopLoading() {
-  loadingContainer?.classList.remove("on");
-
-  analyzeButton?.classList.remove("loading");
-
-  if (analyzeButton) {
-    analyzeButton.textContent = "Comprendre exactement";
-  }
-
-  updateAnalyzeButton();
-}
-
-
-/* ================================
-   AFFICHAGE DU RÉSULTAT
-================================ */
-
-function putText(id, value) {
-  const element = document.getElementById(id);
-
-  if (!element) return;
-
-  if (value === undefined || value === null) {
-    element.textContent = "";
+  if (!fileInput) {
     return;
   }
 
-  if (typeof value === "object") {
-    element.textContent =
-      JSON.stringify(value, null, 2);
-  } else {
-    element.textContent = String(value);
-  }
+  selectedFiles =
+    Array.from(fileInput.files || []);
+
+  displayFiles();
+
+  updateAnalyzeButton();
+
 }
 
 
-function displayResult(data) {
+/* =========================================================
+   AFFICHAGE DES FICHIERS
+   ========================================================= */
+
+function displayFiles() {
+
+  if (!filesContainer) {
+    return;
+  }
+
+  filesContainer.innerHTML = "";
+
+  if (selectedFiles.length === 0) {
+    return;
+  }
+
+  selectedFiles.forEach((file, index) => {
+
+    const fileElement =
+      document.createElement("div");
+
+    fileElement.className =
+      "file-pill";
+
+    const fileName =
+      document.createElement("span");
+
+    fileName.textContent =
+      file.name;
+
+    const fileSize =
+      document.createElement("small");
+
+    fileSize.textContent =
+      formatFileSize(file.size);
+
+    const removeButton =
+      document.createElement("button");
+
+    removeButton.type = "button";
+
+    removeButton.textContent = "×";
+
+    removeButton.title =
+      "Supprimer ce fichier";
+
+    removeButton.addEventListener(
+      "click",
+      () => {
+
+        removeFile(index);
+
+      }
+    );
+
+    fileElement.appendChild(fileName);
+
+    fileElement.appendChild(fileSize);
+
+    fileElement.appendChild(removeButton);
+
+    filesContainer.appendChild(
+      fileElement
+    );
+
+  });
+
+}
+
+
+/* =========================================================
+   SUPPRIMER UN FICHIER
+   ========================================================= */
+
+function removeFile(index) {
+
+  selectedFiles.splice(index, 1);
 
   /*
-   * Le backend peut renvoyer une réponse
-   * complète dans "answer".
-   */
+    On recrée un DataTransfer afin de
+    synchroniser l'input file.
+  */
 
-  if (data.answer) {
+  if (fileInput) {
 
-    const answer =
-      typeof data.answer === "string"
-        ? data.answer
-        : JSON.stringify(data.answer, null, 2);
+    const dataTransfer =
+      new DataTransfer();
 
-    putText("meaning", answer);
+    selectedFiles.forEach((file) => {
 
-    putText(
-      "exact",
-      "Life Pilot a analysé ta situation à partir des informations fournies."
-    );
+      dataTransfer.items.add(file);
 
-    putText(
-      "action",
-      "Consulte les recommandations fournies par Life Pilot et vérifie les informations importantes avant d'agir."
-    );
+    });
 
-    putText(
-      "attention",
-      "Vérifie toujours les dates, montants, documents et destinataires avant de prendre une décision importante."
-    );
+    fileInput.files =
+      dataTransfer.files;
 
-    putText(
-      "missing",
-      "Si des informations supplémentaires sont nécessaires, Life Pilot pourra te demander de préciser ta situation."
-    );
-
-    putText("reply", answer);
-
-  } else {
-
-    /*
-     * Si le backend renvoie des champs séparés,
-     * on les utilise directement.
-     */
-
-    putText(
-      "meaning",
-      data.meaning ||
-      data.explanation ||
-      data.summary ||
-      "Analyse reçue."
-    );
-
-    putText(
-      "exact",
-      data.exact ||
-      data.request ||
-      data.objective ||
-      "Aucune information supplémentaire."
-    );
-
-    putText(
-      "action",
-      data.action ||
-      data.nextStep ||
-      data.steps ||
-      "Consulte les recommandations de Life Pilot."
-    );
-
-    putText(
-      "attention",
-      data.attention ||
-      data.warning ||
-      "Vérifie les informations importantes avant d'agir."
-    );
-
-    putText(
-      "missing",
-      data.missing ||
-      data.questions ||
-      "Aucune information supplémentaire indiquée."
-    );
-
-    putText(
-      "reply",
-      data.reply ||
-      data.response ||
-      "Analyse reçue."
-    );
   }
 
-  resultContainer?.classList.add("on");
+  displayFiles();
+
+  updateAnalyzeButton();
+
 }
 
 
-/* ================================
-   ANALYSE RÉELLE
-================================ */
+/* =========================================================
+   TAILLE DES FICHIERS
+   ========================================================= */
+
+function formatFileSize(bytes) {
+
+  if (!Number.isFinite(bytes)) {
+    return "";
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+
+  if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+
+}
+
+
+/* =========================================================
+   LANCER L'ANALYSE
+   ========================================================= */
 
 async function analyze() {
 
@@ -296,10 +384,17 @@ async function analyze() {
   const objective =
     goalInput?.value.trim() || "";
 
+  /*
+    Vérification minimale.
+  */
+
   if (!situation) {
+
     showError(
-      "Écris d'abord ce que tu veux comprendre."
+      "Décris d'abord ta situation."
     );
+
+    problemInput?.focus();
 
     return;
   }
@@ -310,69 +405,112 @@ async function analyze() {
 
   try {
 
-    const response = await fetch(
-      `${API_URL}/api/analyze`,
-      {
-        method: "POST",
+    const response =
+      await fetch(
+        `${API_URL}/api/analyze`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+          headers: {
+            "Content-Type": "application/json"
+          },
 
-        body: JSON.stringify({
-          situation: situation,
-          objective: objective,
-          tone: selectedTone
-        })
-      }
-    );
+          body: JSON.stringify({
+            situation,
+            objective,
+            tone: selectedTone
+          })
+        }
+      );
 
 
-    let data;
+    /*
+      On tente de lire la réponse JSON.
+    */
+
+    let data = null;
 
     try {
-      data = await response.json();
+
+      data =
+        await response.json();
+
     } catch {
-      throw new Error(
-        "Le serveur a renvoyé une réponse invalide."
-      );
+
+      data = null;
+
     }
 
+
+    /*
+      Si le serveur renvoie une erreur.
+    */
 
     if (!response.ok) {
 
-      /*
-       * Gestion spécifique du manque
-       * de crédits OpenAI.
-       */
+      const message =
+        data?.error ||
+        data?.message ||
+        `Erreur du serveur (${response.status}).`;
 
-      if (
-        response.status === 429 ||
-        data.error?.includes("credits") ||
-        data.message?.includes("credits")
-      ) {
+      throw new Error(message);
 
-        throw new Error(
-          "L'IA est temporairement indisponible : le compte API OpenAI utilisé par Life Pilot n'a plus de crédits."
-        );
-      }
-
-
-      throw new Error(
-        data.error ||
-        data.message ||
-        `Erreur serveur (${response.status}).`
-      );
     }
 
 
-    displayResult(data);
+    /*
+      Vérification de la réponse.
+    */
+
+    if (
+      !data ||
+      data.success !== true
+    ) {
+
+      throw new Error(
+        data?.error ||
+        "Le serveur n'a pas retourné une analyse valide."
+      );
+
+    }
 
 
-    resultContainer?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    if (
+      typeof data.answer !== "string" ||
+      !data.answer.trim()
+    ) {
+
+      throw new Error(
+        "Life Pilot n'a retourné aucune réponse."
+      );
+
+    }
+
+
+    /*
+      Affichage du résultat.
+    */
+
+    displayResult(data.answer);
+
+
+    /*
+      Faire défiler automatiquement
+      vers le résultat.
+    */
+
+    if (resultContainer) {
+
+      setTimeout(() => {
+
+        resultContainer.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      }, 100);
+
+    }
 
 
   } catch (error) {
@@ -383,134 +521,432 @@ async function analyze() {
     );
 
     showError(
-      error.message ||
-      "Impossible de contacter Life Pilot."
+      getFriendlyErrorMessage(error)
     );
 
   } finally {
 
     stopLoading();
+
   }
+
 }
 
 
-/* ================================
+/* =========================================================
+   MESSAGE D'ERREUR UTILISATEUR
+   ========================================================= */
+
+function getFriendlyErrorMessage(error) {
+
+  const message =
+    error?.message || "";
+
+  /*
+    Erreur de crédits OpenAI.
+  */
+
+  if (
+    message.includes("crédits") ||
+    message.includes("credits") ||
+    message.includes("crédit")
+  ) {
+
+    return (
+      "Le moteur IA est actuellement indisponible " +
+      "car le compte API n'a plus de crédits."
+    );
+
+  }
+
+
+  /*
+    Erreur réseau.
+  */
+
+  if (
+    error instanceof TypeError ||
+    message.toLowerCase().includes("failed to fetch")
+  ) {
+
+    return (
+      "Impossible de contacter Life Pilot. " +
+      "Vérifie ta connexion puis réessaie."
+    );
+
+  }
+
+
+  /*
+    Erreur générique.
+  */
+
+  return message ||
+    "Une erreur est survenue. Réessaie dans quelques instants.";
+
+}
+
+
+/* =========================================================
+   AFFICHAGE DU CHARGEMENT
+   ========================================================= */
+
+function startLoading() {
+
+  loadingContainer?.classList.add("on");
+
+  resultContainer?.classList.remove("on");
+
+  analyzeButton?.classList.add("loading");
+
+  if (analyzeButton) {
+
+    analyzeButton.disabled = true;
+
+    analyzeButton.textContent =
+      "Analyse en cours...";
+
+  }
+
+}
+
+
+/* =========================================================
+   FIN DU CHARGEMENT
+   ========================================================= */
+
+function stopLoading() {
+
+  loadingContainer?.classList.remove("on");
+
+  analyzeButton?.classList.remove("loading");
+
+  if (analyzeButton) {
+
+    analyzeButton.textContent =
+      "Comprendre exactement";
+
+  }
+
+  updateAnalyzeButton();
+
+}
+
+
+/* =========================================================
+   AFFICHAGE DU RÉSULTAT
+   ========================================================= */
+
+function displayResult(answer) {
+
+  /*
+    Le backend renvoie une réponse complète.
+    On l'affiche dans la partie principale.
+  */
+
+  const meaning =
+    document.getElementById("meaning");
+
+  const exact =
+    document.getElementById("exact");
+
+  const action =
+    document.getElementById("action");
+
+  const attention =
+    document.getElementById("attention");
+
+  const missing =
+    document.getElementById("missing");
+
+  const reply =
+    document.getElementById("reply");
+
+
+  /*
+    On met la réponse complète dans
+    "Réponse Life Pilot".
+  */
+
+  if (reply) {
+
+    reply.textContent =
+      answer;
+
+  }
+
+
+  /*
+    Les autres sections donnent un
+    contexte général à la réponse.
+  */
+
+  if (meaning) {
+
+    meaning.textContent =
+      "Life Pilot a analysé ta situation et a préparé une réponse adaptée.";
+
+  }
+
+  if (exact) {
+
+    exact.textContent =
+      "L'analyse tient compte de la situation et de l'objectif que tu as indiqués.";
+
+  }
+
+  if (action) {
+
+    action.textContent =
+      "Lis la réponse complète ci-dessous et suis les étapes proposées lorsque cela est pertinent.";
+
+  }
+
+  if (attention) {
+
+    attention.textContent =
+      "Pour les décisions importantes, vérifie toujours les informations et les éléments essentiels avant d'agir.";
+
+  }
+
+  if (missing) {
+
+    missing.textContent =
+      "Si des informations importantes manquent, précise-les dans une nouvelle analyse pour obtenir une réponse plus précise.";
+
+  }
+
+
+  resultContainer?.classList.add("on");
+
+}
+
+
+/* =========================================================
    COPIER LA RÉPONSE
-================================ */
+   ========================================================= */
 
 async function copyReply() {
 
   const reply =
     document.getElementById("reply");
 
-  if (!reply) return;
+  if (!reply) {
+    return;
+  }
 
   const text =
     reply.textContent.trim();
 
   if (!text) {
-    showToast("Aucune réponse à copier.");
+
+    showToast(
+      "Il n'y a aucune réponse à copier."
+    );
+
     return;
   }
 
 
   try {
 
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(
+      text
+    );
 
-    showToast("Réponse copiée ✓");
+    showToast(
+      "Réponse copiée ✓"
+    );
 
   } catch {
 
-    showToast(
-      "Impossible de copier automatiquement."
+    /*
+      Méthode de secours pour les
+      navigateurs qui bloquent Clipboard API.
+    */
+
+    const textarea =
+      document.createElement("textarea");
+
+    textarea.value = text;
+
+    textarea.style.position =
+      "fixed";
+
+    textarea.style.left =
+      "-9999px";
+
+    document.body.appendChild(
+      textarea
     );
+
+    textarea.select();
+
+    try {
+
+      document.execCommand("copy");
+
+      showToast(
+        "Réponse copiée ✓"
+      );
+
+    } catch {
+
+      showToast(
+        "Impossible de copier la réponse."
+      );
+
+    }
+
+    textarea.remove();
+
   }
+
 }
 
 
-/* ================================
-   PREMIUM
-================================ */
+/* =========================================================
+   BOUTON PREMIUM
+   ========================================================= */
 
 function showPremium() {
 
   showToast(
-    "Premium sera disponible lorsque le paiement sera connecté."
+    "Les fonctionnalités Premium seront disponibles prochainement."
   );
+
 }
 
 
-/* ================================
-   NOTIFICATION
-================================ */
+/* =========================================================
+   FOCUS SUR LE PROBLÈME
+   ========================================================= */
+
+function focusProblem() {
+
+  if (!problemInput) {
+    return;
+  }
+
+  problemInput.focus();
+
+  problemInput.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+}
+
+
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
 
 function showToast(message) {
 
-  if (!toastContainer) return;
+  if (!toastContainer) {
+    return;
+  }
 
-  toastContainer.textContent = message;
+  toastContainer.textContent =
+    message;
 
   toastContainer.classList.add("on");
 
-  clearTimeout(window.lifePilotToastTimer);
+  clearTimeout(
+    window.lifePilotToastTimer
+  );
 
   window.lifePilotToastTimer =
     setTimeout(() => {
 
-      toastContainer.classList.remove("on");
+      toastContainer.classList.remove(
+        "on"
+      );
 
     }, 3000);
+
 }
 
 
-/* ================================
-   FOCUS SUR LE CHAMP
-================================ */
+/* =========================================================
+   FONCTIONS UTILITAIRES
+   ========================================================= */
 
-function focusProblem() {
+function clearForm() {
 
-  problemInput?.focus();
+  if (problemInput) {
+    problemInput.value = "";
+  }
 
-  problemInput?.scrollIntoView({
+  if (goalInput) {
+    goalInput.value = "";
+  }
+
+  if (fileInput) {
+    fileInput.value = "";
+  }
+
+  selectedFiles = [];
+
+  displayFiles();
+
+  resultContainer?.classList.remove("on");
+
+  hideError();
+
+  updateAnalyzeButton();
+
+}
+
+
+function hideError() {
+
+  if (!errorContainer) {
+    return;
+  }
+
+  errorContainer.textContent = "";
+
+  errorContainer.classList.remove("on");
+
+}
+
+
+function showError(message) {
+
+  if (!errorContainer) {
+    return;
+  }
+
+  errorContainer.textContent =
+    message;
+
+  errorContainer.classList.add("on");
+
+  errorContainer.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
+
 }
 
 
-/* ================================
-   ÉVÉNEMENTS
-================================ */
+/* =========================================================
+   EXPOSER LES FONCTIONS AUX BOUTONS HTML
+   ========================================================= */
 
-if (problemInput) {
-  problemInput.addEventListener(
-    "input",
-    updateAnalyzeButton
-  );
-}
+window.analyze =
+  analyze;
 
+window.copyReply =
+  copyReply;
 
-if (fileInput) {
-  fileInput.addEventListener(
-    "change",
-    displayFiles
-  );
-}
+window.showPremium =
+  showPremium;
 
+window.focusProblem =
+  focusProblem;
 
-if (analyzeButton) {
-  analyzeButton.addEventListener(
-    "click",
-    analyze
-  );
-}
-
-
-/* ================================
-   INITIALISATION
-================================ */
-
-initializeTones();
-
-updateAnalyzeButton();
+window.clearForm =
+  clearForm;
